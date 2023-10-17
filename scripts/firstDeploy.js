@@ -6,9 +6,9 @@ async function main() {
     console.log("Deploying NFTMint...");
     const nftMint = await upgrades.deployProxy(NFTMint, { initializer: 'initialize' });
 
-    await nftMint.deployed();
+    await nftMint.waitForDeployment();
 
-    console.log('NFTMint deployed to:', nftMint.address.toLowerCase());
+    console.log('NFTMint deployed to:', (await nftMint.getAddress()).toLowerCase());
 
     // For MarketPlace
     const exchangeRateAddress = "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0";
@@ -18,11 +18,11 @@ async function main() {
     console.log("Deploying NFTMarketplace...");
     const nftMarketplace = await upgrades.deployProxy(NFTMarketplace, [exchangeRateAddress], { initializer: 'initialize' });
 
-    await nftMarketplace.deployed();
+    await nftMarketplace.waitForDeployment();
 
-    console.log('NFTMarketplace deployed to:', nftMarketplace.address.toLowerCase());
+    console.log('NFTMarketplace deployed to:', (await nftMarketplace.getAddress()).toLowerCase());
 
-    const transaction = await nftMarketplace.storeMintingContracts(nftMint.address)
+    const transaction = await nftMarketplace.storeMintingContracts(nftMint.getAddress())
     console.log(transaction);
   } catch (error) {
     console.error("Error in script:", error);

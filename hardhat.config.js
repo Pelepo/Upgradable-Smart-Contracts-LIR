@@ -13,9 +13,11 @@ module.exports = {
     },
     polygon_mainnet: {
       url: process.env.ALCHEMY_RPC_MAINNET,
-      accounts: [`0x${process.env.PRIVATE_KEY}`, `0x${process.env.PRIVATE_KEY_2}`],
-      gasPrice: 100000000000
+      accounts: [`0x${process.env.PRIVATE_KEY}`, `0x${process.env.PRIVATE_KEY_2}`]
     }
+  },
+  etherscan: {
+    apiKey: 'EBBCDV7REM2FADS57V48ZB16BJIBXCSJAG'
   },
   external: {
     contracts: [

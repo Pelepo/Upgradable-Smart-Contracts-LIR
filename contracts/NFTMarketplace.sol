@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable-4.7.3/utils/CountersUpgradeable.sol"
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable-4.7.3/token/ERC1155/extensions/IERC1155MetadataURIUpgradeable.sol";
+import "hardhat/console.sol";
 
 /*
     Note:
@@ -35,7 +36,7 @@ contract NFTMarketplaceUpgradable is ERC1155HolderUpgradeable {
     // 1)
     IERC1155MetadataURIUpgradeable private NFTMint;
     // 2)
-    AggregatorV3Interface public exchangeRateMaticUsd;
+    AggregatorV3Interface internal exchangeRateMaticUsd;
 
     // initializable function to make the smart contract upgradable (constructors are not allowed)
     function initialize(address _exchangeRateAddress) public initializer {
@@ -385,11 +386,13 @@ contract NFTMarketplaceUpgradable is ERC1155HolderUpgradeable {
         3) Update seller information (TokenSellers) and transfer the token to the new owner (the token transfer is within the function).
         4) Split the message value among the actors.
     */
+
     function createMarketSaleMatic(
         uint256 tokenId,
         address contractAddress,
         address payable tokenSeller,
-        uint80 _roundId
+        uint80 _roundId,
+        uint256 _startedAt
     ) public payable {
         // 1)
         int indexSeller = findElementIndexInSellers(
@@ -397,6 +400,15 @@ contract NFTMarketplaceUpgradable is ERC1155HolderUpgradeable {
             tokenId,
             contractAddress
         );
+        require(
+            indexSeller != -1 &&
+                idToSellers[tokenId][contractAddress].sellingQuantity[
+                    uint(indexSeller)
+                ] >
+                0,
+            "To buy the token, the owner must have listed one"
+        );
+
         NFTMint = IERC1155MetadataURIUpgradeable(contractAddress);
         // Necessary check in case the seller has sold the token outside the marketplace
         if (NFTMint.balanceOf(tokenSeller, tokenId) == 0) {
@@ -406,31 +418,25 @@ contract NFTMarketplaceUpgradable is ERC1155HolderUpgradeable {
                 "The seller of the token has already transferred the token"
             );
         }
-
-        require(
-            indexSeller != -1 &&
-                idToSellers[tokenId][contractAddress].sellingQuantity[
-                    uint(indexSeller)
-                ] >
-                0,
-            "To buy the token, the owner must have listed one"
-        );
         // 2)
+        uint256 currentTimestamp = block.timestamp;
+        require(
+            currentTimestamp - _startedAt < 500,
+            "Your transaction has taken too long. Please try again"
+        );
+
         uint256 price = getLatestPriceGivenRound(
             _roundId,
             idToSellers[tokenId][contractAddress].sellingPrice[
                 uint(indexSeller)
             ]
         );
-
-        /* uint256 price = idToSellers[tokenId][contractAddress].sellingPrice[
-            uint(indexSeller)
-        ];
- */
         require(
             msg.value == price,
             "Please submit the asking price in order to complete the purchase"
         );
+
+        NFTMint.safeTransferFrom(tokenSeller, msg.sender, tokenId, 1, "");
         // 3)
         updateIdToOwner(tokenId, contractAddress, tokenSeller);
         // 4)
@@ -481,23 +487,23 @@ contract NFTMarketplaceUpgradable is ERC1155HolderUpgradeable {
         uint80 _roundId,
         uint256 USDprice
     ) public view returns (uint256) {
-        (uint80 roundID, ) = getLatestPrice();
-        require(
-            roundID - _roundId < 5,
-            "Your transaction has taken too long. Please try again"
-        );
         (, int256 price, , , ) = exchangeRateMaticUsd.getRoundData(_roundId);
-        uint256 MaticPrice = (USDprice * 10 ** 8) / (uint256(price));
+        uint256 MaticPrice = ((USDprice) / (uint256(price))) * 10 ** 8;
         return MaticPrice;
     }
 
     /*
         Function that returns the most up-to-date Matic/USD exchange rate and the corresponding roundID.
     */
-    function getLatestPrice() public view returns (uint80, int256) {
-        (uint80 roundID, int256 price, , , ) = exchangeRateMaticUsd
-            .latestRoundData();
-        return (roundID, price);
+    function getLatestPrice() public view returns (uint80, uint256, int256) {
+        (
+            uint80 roundID,
+            int256 price,
+            uint256 startedAt,
+            ,
+
+        ) = exchangeRateMaticUsd.latestRoundData();
+        return (roundID, startedAt, price);
     }
 
     /*
@@ -511,9 +517,6 @@ contract NFTMarketplaceUpgradable is ERC1155HolderUpgradeable {
         address contractAddress,
         address tokenSeller
     ) private {
-        // 1)
-        NFTMint = IERC1155MetadataURIUpgradeable(contractAddress);
-        NFTMint.safeTransferFrom(tokenSeller, msg.sender, tokenId, 1, "");
         // 2)
         int indexSeller = findElementIndexInSellers(
             tokenSeller,

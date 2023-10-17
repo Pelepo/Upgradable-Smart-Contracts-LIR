@@ -10,14 +10,14 @@ describe("Testing Contract Interactions", function () {
     let secondAccount;
     let tokenId;
     const URI = "kmdeka";
-    const supply = 10;
+    const supply = 20;
     const royalties = 10;
     const price = 0.00001;
     const amount = 10;
-    const firstSalesFees = 10;
+    const firstSalesFees = 1;
 
     before(async function () {
-        this.timeout(180000);
+        this.timeout(310000);
         const signers = await ethers.getSigners();
         owner = signers[0];
         secondAccount = signers[1];
@@ -37,7 +37,7 @@ describe("Testing Contract Interactions", function () {
 
 
     it("Set Minting Contract in NFTMarketplace", async function () {
-        this.timeout(60000);
+        this.timeout(310000);
         const transaction = await nftMarketplace.storeMintingContracts(nftMintAddress);
         await transaction.wait();
 
@@ -45,42 +45,27 @@ describe("Testing Contract Interactions", function () {
         expect(await nftMarketplace.contractsAllowed(0)).to.equal(await nftMintAddress);
     });
 
-    it("Create the first token", async function () {
-        this.timeout(60000);
-        const transaction = await nftMint.connect(owner).createToken(URI, supply, royalties);
+    it("Create and list first token", async function () {
+        this.timeout(310000);
+        const valueInWei = ethers.parseEther(price.toString());
+        const transaction = await nftMint.connect(owner).createAndListToken(URI, valueInWei, supply, amount, royalties, firstSalesFees, nftMarketplaceAddress);
         await transaction.wait();
+        tokenId = await nftMint.getLastTokenId();
 
         expect(await nftMint.getLastTokenId()).to.equal(1);
     });
 
-    it("List first token", async function () {
-        this.timeout(60000);
-        tokenId = await nftMint.getLastTokenId();
-        const valueInWei = ethers.parseEther(price.toString());
-        const transaction = await nftMint.connect(owner).firstListing(tokenId, valueInWei, supply, amount, royalties, firstSalesFees, nftMarketplaceAddress);
-        await transaction.wait();
-    });
-
-    it("Purchase token", async function () {
-        this.timeout(60000);
-        /* const valueInWei = ethers.parseEther(price.toString());
-        console.log(valueInWei); */
-        const [roundId,] = await nftMarketplace.getLatestPrice();
-        console.log(roundId);
-        const valueInWei = ethers.parseEther(price.toString());
-        console.log("Value in Wei: ", valueInWei);
-        const MaticPrice = await nftMarketplace.getLatestPriceGivenRound(roundId, valueInWei);
-        console.log(typeof MaticPrice);
-        console.log(MaticPrice);
-        console.log("Matic Price: ", MaticPrice.toString());
-        /* const value2 = ethers.parseUnits(MaticPrice.toString(), 0);
-        console.log(typeof value2);
-        console.log(value2); */
-        const transaction = await nftMarketplace.connect(secondAccount).createMarketSaleMatic(
-            tokenId, nftMintAddress, owner.getAddress(), roundId,
-            { value: MaticPrice }
-        );
-        await transaction.wait();
-        console.log(transaction);
-    });
+    for (let i = 0; i < 8; i++) {
+        it(`Purchase token ${i}`, async function () {
+            this.timeout(310000);
+            const [roundId, startedAt,] = await nftMarketplace.getLatestPrice();
+            const valueInWei = ethers.parseEther(price.toString());
+            const MaticPrice = await nftMarketplace.getLatestPriceGivenRound(roundId, valueInWei);
+            const transaction = await nftMarketplace.connect(secondAccount).createMarketSaleMatic(
+                tokenId, nftMintAddress, owner.getAddress(), roundId, startedAt,
+                { value: MaticPrice }
+            );
+            await transaction.wait();
+        });
+    }
 })
