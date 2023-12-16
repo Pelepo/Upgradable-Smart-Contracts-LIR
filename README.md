@@ -1,8 +1,5 @@
-# Sample Hardhat Project
-
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
-
-Try running some of the following tasks:
+This project contains the two upgradable smart contracts used in LIR music creation.
+This are the most important commands:
 
 ```shell
 
@@ -14,9 +11,11 @@ npx hardhat compile
 npx hardhat run scripts/firstDeploy.js --network polygon_mumbai
 npx hardhat run scripts/firstDeploy.js --network polygon_mainnet
 
+//Deployment of NFTMint
 npx hardhat run scripts/deployNFTMint.js --network polygon_mumbai
 npx hardhat run scripts/deployNFTMint.js --network polygon_mainnet
 
+//Deployment of NFTMarketplace
 npx hardhat run scripts/deployNFTMarketplace.js --network polygon_mumbai
 npx hardhat run scripts/deployNFTMarketplace.js --network polygon_mainnet
 
