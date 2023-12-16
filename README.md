@@ -24,9 +24,11 @@ npx hardhat run scripts/deployNFTMarketplace.js --network polygon_mainnet
 npx hardhat verify --contract "contracts/NFTMint.sol:NFTMintUpgradable" contract.address --network polygon_mumbai
 npx hardhat verify --contract "contracts/NFTMint.sol:NFTMintUpgradable" contract.address --network polygon_mainnet
 
-
 npx hardhat verify --contract "contracts/NFTMarketplace.sol:NFTMarketplaceUpgradable" contract.address --network polygon_mumbai
 npx hardhat verify --contract "contracts/NFTMarketplace.sol:NFTMarketplaceUpgradable" contract.address --network polygon_mainnet
+
+//To transfer the Ownership of the contract
+npx hardhat run scripts/transferOwnership.js --network polygon_mainnet
 
 //To update the contract that can interact with NFTMarketplace
 npx hardhat run scripts/addNewContract.js --network polygon_mumbai "contractAddress"

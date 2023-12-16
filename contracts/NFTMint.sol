@@ -68,8 +68,8 @@ contract NFTMintUpgradable is ERC1155URIStorageUpgradeable {
         );
         initialized = true;
         _owner = payable(msg.sender);
-        setName("Lir Token");
-        setSymbol("LIR");
+        setName("Troviero Lir Token");
+        setSymbol("TRVR");
     }
 
     function setName(string memory _name) private {

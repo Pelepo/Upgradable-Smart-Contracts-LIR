@@ -8,12 +8,12 @@ module.exports = {
   networks: {
     hardhat: {},
     polygon_mumbai: {
-      url: process.env.ALCHEMY_RPC, //process.env.ALCHEMY_URL,
-      accounts: [`0x993b8c757c63f876a3e55f0103fdb7704b10af1865f0a79b1345541521473b7a`, `0x${process.env.PRIVATE_KEY}`]
+      url: process.env.ALCHEMY_RPC_MUMBAI, //process.env.ALCHEMY_URL,
+      accounts: [`0x${process.env.PRIVATE_KEY_LIR_FILIPPO}`]
     },
     polygon_mainnet: {
       url: process.env.ALCHEMY_RPC_MAINNET,
-      accounts: [`0x${process.env.PRIVATE_KEY}`, `0x${process.env.PRIVATE_KEY_2}`]
+      accounts: [`0x${process.env.PRIVATE_KEY_TROVIERO}`]
     }
   },
   etherscan: {

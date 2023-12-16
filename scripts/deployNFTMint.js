@@ -5,9 +5,9 @@ async function main() {
   console.log("Deploying NFTMint...");
   const nftMint = await upgrades.deployProxy(NFTMint, { initializer: 'initialize' });
 
-  await nftMint.deployed();
+  await nftMint.waitForDeployment();
 
-  console.log('NFTMint deployed to:', nftMint.address.toLowerCase());
+  console.log('NFTMint deployed to:', (await nftMint.getAddress()).toLowerCase());
 }
 
 // We recommend this pattern to be able to use async/await everywhere
