@@ -6,6 +6,8 @@ This are the most important commands:
 //To compile the contract
 npx hardhat compile
 
+//To test contract
+npx hardhat test
 
 //For the first deployment of the contracts
 npx hardhat run scripts/firstDeploy.js --network polygon_mumbai

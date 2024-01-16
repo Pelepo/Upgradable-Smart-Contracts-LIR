@@ -61,15 +61,18 @@ contract NFTMintUpgradable is ERC1155URIStorageUpgradeable {
 
     event TokenCreated(uint256 indexed tokenId, address smartContract);
 
-    function initialize() public initializer {
+    function initialize(
+        string memory nameToken,
+        string memory symbolToken
+    ) public initializer {
         require(
             !initialized,
             "Contract instance has already being initialized"
         );
         initialized = true;
         _owner = payable(msg.sender);
-        setName("Troviero Lir Token");
-        setSymbol("TRVR");
+        setName(nameToken);
+        setSymbol(symbolToken);
     }
 
     function setName(string memory _name) private {

@@ -3,7 +3,9 @@ const { ethers, upgrades } = require('hardhat');
 async function main() {
   const NFTMint = await ethers.getContractFactory("NFTMintUpgradable");
   console.log("Deploying NFTMint...");
-  const nftMint = await upgrades.deployProxy(NFTMint, { initializer: 'initialize' });
+  const nameToken = "LIR MUSIC PROVA";
+  const symbolToken = "GMCZ";
+  const nftMint = await upgrades.deployProxy(NFTMint, [nameToken, symbolToken], { initializer: 'initialize' });
 
   await nftMint.waitForDeployment();
 

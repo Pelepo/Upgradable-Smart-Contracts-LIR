@@ -23,7 +23,9 @@ describe("Testing Contract Interactions", function () {
         secondAccount = signers[1];
 
         const NFTMint = await ethers.getContractFactory("NFTMintUpgradable");
-        nftMint = await upgrades.deployProxy(NFTMint, [], { initializer: "initialize" });
+        const nameToken = "PROVA"
+        const symbolToken = "CIAO"
+        nftMint = await upgrades.deployProxy(NFTMint, [nameToken, symbolToken], { initializer: "initialize" });
         await nftMint.waitForDeployment();
         nftMintAddress = await nftMint.getAddress();
         console.log("nftMint deployed to:", nftMintAddress);
@@ -51,7 +53,9 @@ describe("Testing Contract Interactions", function () {
         const transaction = await nftMint.connect(owner).createAndListToken(URI, valueInWei, supply, amount, royalties, firstSalesFees, nftMarketplaceAddress);
         await transaction.wait();
         tokenId = await nftMint.getLastTokenId();
-
+        const symbol = await nftMint.viewSymbol();
+        const name = await nftMint.viewName();
+        console.log(symbol, name);
         expect(await nftMint.getLastTokenId()).to.equal(1);
     });
 
